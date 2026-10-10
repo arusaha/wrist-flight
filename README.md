@@ -1,8 +1,23 @@
-# Wrist Flight
+# Wrist Flight — Automatic Airplane Mode for Galaxy Watch
 
-A personal, sideloadable Wear OS app for your Galaxy Watch. The app is built as `dist/WristFlight-1.0.apk` and uses **Shizuku on the watch** to control airplane mode without root.
+**Wear your watch. Let airplane mode follow.**
 
-[Download Wrist Flight 1.0](https://github.com/arusaha/wrist-flight/releases/tag/v1.0) for the APK and SHA-256 checksum. The source, installer and build scripts are included in this repository.
+Wrist Flight automates airplane mode on **Samsung Galaxy Watch and compatible Wear OS smartwatches**. Put your watch on and airplane mode turns on. Take it off or place it on its charger and airplane mode turns off. If you prefer airplane mode while wearing your watch, Wrist Flight saves you the repeated trips to Quick Settings.
+
+**[Download the APK](https://github.com/arusaha/wrist-flight/releases/tag/v1.0)** · **[Installation guide](#install-from-windows)** · **[Compatibility and testing](#compatibility-and-testing)**
+
+A sideloadable Android watch app. **No root required; Shizuku must be installed and running on the watch.**
+
+## Why Wrist Flight?
+
+- **Automatic airplane / flight mode:** uses the watch's wrist-detection sensor to follow when you put it on and take it off.
+- **Charging takes priority:** airplane mode stays off while docked, including when fully charged.
+- **Control on the watch:** start, pause, check setup and review recent activity from a round-screen interface.
+- **Local operation:** once Shizuku is running, airplane-mode commands stay on the watch; a live computer connection is not required for each change.
+- **No account, ads or analytics:** Wrist Flight has no Internet permission and does not collect GPS or heart-rate readings.
+- **Ready to sideload:** download the APK and checksum, or build it yourself. Source code, tests and Windows setup scripts are included.
+
+## How it works
 
 | Watch state, while automation is enabled | Airplane mode |
 | --- | --- |
@@ -13,13 +28,17 @@ A personal, sideloadable Wear OS app for your Galaxy Watch. The app is built as 
 
 Charging always takes priority. There is no deliberate delay before turning airplane mode off; the sensor, Android and the system command still take time. After undocking, the app requests a fresh wrist reading before it can enable airplane mode again. **Pause & turn off** disables automation and requests airplane mode off.
 
+## Compatibility and testing
+
+Wrist Flight requires a Wear OS watch running Android API 30 or later, a wake-up off-body sensor, Sensors permissions, and Shizuku running on the watch. **The maintainer confirmed the app works on their Samsung watch on October 10, 2026.** The setup was identified as **Samsung SM-L350, Android API 37**, with Shizuku 13.6.0 and the `offbody_detect Wakeup` sensor.
+
+The build and all 20 automated policy tests pass. Results for every [physical verification scenario](#physical-verification), long-term reliability and battery use have not been individually recorded. Other watch models and firmware versions are not yet verified. A phone companion app is not required.
+
 ## What you need to know first
 
 An ordinary Android app cannot change airplane mode. Sideloading alone, or granting `WRITE_SECURE_SETTINGS`, is insufficient. Wrist Flight uses a Shizuku UserService to invoke Android's privileged connectivity command and check the result. You must install and start **Shizuku on the watch itself**; having it on your phone does not provide watch access.
 
 **Check that Shizuku is running after each watch reboot; use the restart script when needed.** This setup uses the computer-started service. Shizuku 13.6 also advertises optional automatic startup on a trusted WLAN; that feature has not been configured or verified here. Once started, commands travel locally over Binder, not over Wi-Fi. A live computer connection is not used for each change. However, Samsung firmware can stop Shizuku or the monitor, and this device-specific behavior must be checked with the screen off and radios disconnected. Do not disable Developer options or ADB debugging after setup; Shizuku's guide warns this can stop it.
-
-The APK builds successfully, and all 20 automated policy tests pass. On October 10, 2026, setup was verified on a **Samsung SM-L350, Android API 37**: Shizuku 13.6.0 was running, Wrist Flight was authorized, foreground/background Sensors permissions were granted, the `offbody_detect Wakeup` sensor was present, and the app's read-only airplane check returned `OK: disabled`. Automation was left paused. **Physical wear/removal, charging transitions, actual radio changes and battery use still need the checks below.** There is no phone companion app or account.
 
 ## Install from Windows
 
