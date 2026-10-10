@@ -1,6 +1,10 @@
 package dev.wristflight;
 
 import android.Manifest;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,10 +18,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.PathInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -30,6 +36,8 @@ import rikka.shizuku.Shizuku;
 public final class MainActivity extends Activity {
     private static final int MINT = Color.rgb(169, 241, 206);
     private static final int MUTED = Color.rgb(166, 177, 171);
+    private static final int CHIP_COLOR = Color.rgb(20, 43, 35);
+    private static final float PLANE_ANGLE = 45f;
     private final Handler main = new Handler(Looper.getMainLooper());
     private AppPrefs prefs;
     private LinearLayout content;
@@ -37,6 +45,10 @@ public final class MainActivity extends Activity {
     private String page = "home";
     private TextView headline, chip, status, readings, access, diagnostics;
     private Button toggle;
+    private ImageView plane;
+    private Boolean planeMonitoring;
+    private GradientDrawable chipBackground;
+    private AnimatorSet toggleAnimation;
     private final Runnable ticker = new Runnable() {
         @Override public void run() { update(); main.postDelayed(this, 1000); }
     };
@@ -56,9 +68,13 @@ public final class MainActivity extends Activity {
     }
 
     private void show(String destination) {
+        resetToggleAnimation();
         page = destination;
         headline = chip = status = readings = access = diagnostics = null;
         toggle = null;
+        plane = null;
+        planeMonitoring = null;
+        chipBackground = null;
         scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         scroll.setVerticalScrollBarEnabled(false);
@@ -66,7 +82,7 @@ public final class MainActivity extends Activity {
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
         content.setGravity(Gravity.CENTER_HORIZONTAL);
-        content.setPadding(dp(24), dp(32), dp(24), dp(36));
+        content.setPadding(dp(24), dp("home".equals(page) ? 20 : 32), dp(24), dp(36));
         scroll.addView(content, new ScrollView.LayoutParams(-1, -2));
         scroll.setOnGenericMotionListener((view, event) -> {
             if (event.getAction() == MotionEvent.ACTION_SCROLL && event.isFromSource(InputDevice.SOURCE_ROTARY_ENCODER)) {
@@ -85,36 +101,58 @@ public final class MainActivity extends Activity {
     }
 
     private void home() {
-        label("WRIST FLIGHT", 11, MINT, true);
-        ImageView plane = new ImageView(this);
-        plane.setImageResource(R.drawable.ic_flight);
+        content.setClipChildren(false);
+        LinearLayout brand = new LinearLayout(this);
+        brand.setOrientation(LinearLayout.HORIZONTAL);
+        brand.setClipChildren(false);
+        brand.setGravity(Gravity.CENTER);
+        brand.setMinimumHeight(dp(18));
+        plane = new ImageView(this);
+        plane.setImageResource(R.drawable.ic_flight_outline);
         plane.setColorFilter(MINT);
+        plane.setRotation(PLANE_ANGLE);
         plane.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        LinearLayout.LayoutParams icon = new LinearLayout.LayoutParams(dp(34), dp(34));
-        icon.setMargins(0, dp(14), 0, dp(8));
-        content.addView(plane, icon);
-        headline = label("Ready when you are", 25, Color.WHITE, true);
+        LinearLayout.LayoutParams icon = new LinearLayout.LayoutParams(dp(16), dp(16));
+        icon.setMarginEnd(dp(6));
+        brand.addView(plane, icon);
+        TextView name = new TextView(this);
+        name.setText(R.string.app_name);
+        name.setAllCaps(true);
+        name.setTextSize(11);
+        name.setTextColor(MINT);
+        name.setIncludeFontPadding(false);
+        name.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        brand.addView(name);
+        content.addView(brand, new LinearLayout.LayoutParams(-1, -2));
+        margin(brand, 0, 8);
+        headline = label("Ready to start", 22, Color.WHITE, true);
+        headline.setMaxLines(1);
+        headline.setEllipsize(TextUtils.TruncateAt.END);
+        margin(headline, 4, 4);
         chip = label("AIRPLANE OFF", 11, MINT, true);
-        chip.setPadding(dp(12), dp(7), dp(12), dp(7));
-        chip.setBackground(round(Color.rgb(20, 43, 35), 20));
-        margin(chip, 10, 8);
-        status = label("", 13, MUTED, false);
-        margin(status, 0, 12);
+        chip.setPadding(dp(12), dp(5), dp(12), dp(5));
+        chipBackground = round(CHIP_COLOR, 20);
+        chip.setBackground(chipBackground);
+        margin(chip, 6, 8);
         toggle = button("Start automation", true, () -> {
-            if (prefs.enabled()) WristService.launch(this, WristService.PAUSE);
-            else {
+            boolean enabling = !prefs.enabled();
+            if (enabling) {
                 String issue = SensorAccess.issue(this);
                 if (issue != null || !ShizukuBridge.authorized()) {
                     toast(issue != null ? issue : "Start Shizuku and grant access first");
                     show("setup");
                     return;
                 }
-                WristService.launch(this, WristService.ENABLE);
+            }
+            if (WristService.launch(this, enabling ? WristService.ENABLE : WristService.PAUSE)) {
+                animateToggle(enabling);
             }
             main.postDelayed(this::update, 200);
         });
-        readings = label("", 13, MUTED, false);
-        margin(readings, 10, 12);
+        readings = label("", 12, MUTED, false);
+        margin(readings, 8, 14);
+        status = label("", 12, MUTED, false);
+        margin(status, 0, 12);
         button("Setup", false, () -> show("setup"));
         button("Status & activity", false, () -> show("details"));
         label("On wrist → airplane on\nOff wrist or charging → off", 12, MUTED, false);
@@ -194,8 +232,12 @@ public final class MainActivity extends Activity {
         WristService service = WristService.instance;
         Boolean airplane = WristService.airplaneState(this);
         boolean active = prefs.enabled() && service != null;
+        if (plane != null && (planeMonitoring == null || planeMonitoring != active)) {
+            plane.setImageResource(active ? R.drawable.ic_flight : R.drawable.ic_flight_outline);
+            planeMonitoring = active;
+        }
         if (headline != null) {
-            String title = "Ready when\nyou are";
+            String title = "Ready to start";
             if (prefs.enabled() && service == null) title = "Needs attention";
             else if (active) {
                 if (!ShizukuBridge.authorized() || !service.sensorRegistered()) title = "Needs attention";
@@ -207,9 +249,14 @@ public final class MainActivity extends Activity {
             headline.setText(title);
         }
         if (chip != null) chip.setText(airplane == null ? "AIRPLANE UNKNOWN" : airplane ? "AIRPLANE ON" : "AIRPLANE OFF");
-        if (status != null) status.setText(prefs.status());
+        if (status != null) {
+            String message = prefs.status();
+            status.setText(message);
+            boolean duplicatePausedStatus = "home".equals(page) && !prefs.enabled() && "Automation paused".equals(message);
+            status.setVisibility(duplicatePausedStatus ? View.GONE : View.VISIBLE);
+        }
         if (toggle != null) toggle.setText(prefs.enabled() ? "Pause & turn off" : "Start automation");
-        if (readings != null) readings.setText(active ? "Monitoring enabled" : "Automation paused");
+        if (readings != null) readings.setText(active ? "Monitoring enabled" : prefs.enabled() ? "Monitoring unavailable" : "Automation paused");
         if (access != null) access.setText("Shizuku: " + (ShizukuBridge.authorized() ? "authorized" : "not ready")
                 + "\nSensors: " + (SensorAccess.foregroundGranted(this) ? "allowed" : "needed")
                 + "\nBackground: " + (SensorAccess.backgroundGranted(this) ? "allowed" : "needed"));
@@ -233,9 +280,10 @@ public final class MainActivity extends Activity {
         main.post(ticker);
         if (prefs.enabled() || prefs.restorePending()) WristService.launch(this, WristService.RESUME);
     }
-    @Override protected void onPause() { main.removeCallbacks(ticker); super.onPause(); }
+    @Override protected void onPause() { main.removeCallbacks(ticker); resetToggleAnimation(); super.onPause(); }
     @Override protected void onDestroy() {
         main.removeCallbacksAndMessages(null);
+        resetToggleAnimation();
         Shizuku.removeRequestPermissionResultListener(permission);
         super.onDestroy();
     }
@@ -278,6 +326,52 @@ public final class MainActivity extends Activity {
         result.setColor(color);
         result.setCornerRadius(dp(radius));
         return result;
+    }
+    private void animateToggle(boolean enabling) {
+        resetToggleAnimation();
+        // The system disables these for reduced motion / zero animator duration.
+        if (!ValueAnimator.areAnimatorsEnabled() || toggle == null) return;
+        ObjectAnimator bounce = ObjectAnimator.ofPropertyValuesHolder(toggle,
+                PropertyValuesHolder.ofFloat(View.SCALE_X, .96f, 1.015f, 1f),
+                PropertyValuesHolder.ofFloat(View.SCALE_Y, .96f, 1.015f, 1f));
+        bounce.setDuration(320);
+        ObjectAnimator flight = ObjectAnimator.ofPropertyValuesHolder(plane,
+                PropertyValuesHolder.ofFloat(View.TRANSLATION_X, 0f, dp(enabling ? 6 : -5), 0f),
+                PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, 0f, dp(enabling ? -8 : 6), 0f),
+                PropertyValuesHolder.ofFloat(View.ROTATION, PLANE_ANGLE, PLANE_ANGLE + (enabling ? -12 : 12), PLANE_ANGLE));
+        flight.setDuration(460);
+        ObjectAnimator title = ObjectAnimator.ofPropertyValuesHolder(headline,
+                PropertyValuesHolder.ofFloat(View.ALPHA, .45f, 1f),
+                PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, dp(4), 0f));
+        title.setDuration(320);
+        ValueAnimator highlight = ValueAnimator.ofArgb(Color.rgb(53, 96, 76), CHIP_COLOR);
+        GradientDrawable background = chipBackground;
+        highlight.addUpdateListener(animation -> background.setColor((int) animation.getAnimatedValue()));
+        highlight.setDuration(420);
+        ObjectAnimator chipScale = ObjectAnimator.ofPropertyValuesHolder(chip,
+                PropertyValuesHolder.ofFloat(View.SCALE_X, .98f, 1f),
+                PropertyValuesHolder.ofFloat(View.SCALE_Y, .98f, 1f));
+        chipScale.setDuration(420);
+        toggleAnimation = new AnimatorSet();
+        toggleAnimation.setInterpolator(new PathInterpolator(.2f, .8f, .2f, 1f));
+        toggleAnimation.playTogether(bounce, flight, title, highlight, chipScale);
+        toggleAnimation.start();
+    }
+    private void resetToggleAnimation() {
+        if (toggleAnimation != null) {
+            toggleAnimation.cancel();
+            toggleAnimation = null;
+        }
+        for (View view : new View[]{toggle, plane, headline, chip}) {
+            if (view == null) continue;
+            view.setScaleX(1f);
+            view.setScaleY(1f);
+            view.setTranslationX(0f);
+            view.setTranslationY(0f);
+            view.setAlpha(1f);
+        }
+        if (plane != null) plane.setRotation(PLANE_ANGLE);
+        if (chipBackground != null) chipBackground.setColor(CHIP_COLOR);
     }
     private void margin(View view, int top, int bottom) {
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view.getLayoutParams();

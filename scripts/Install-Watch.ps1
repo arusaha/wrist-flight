@@ -13,7 +13,7 @@ param(
     [string]$PairAddress,
     [string]$ConnectAddress,
     [string]$ShizukuApk,
-    [string]$ApkPath = (Join-Path $PSScriptRoot '..\dist\WristFlight-1.0.apk'),
+    [string]$ApkPath = (Join-Path $PSScriptRoot '..\dist\WristFlight-1.1.apk'),
     [switch]$RestartOnly
 )
 $ErrorActionPreference = 'Stop'

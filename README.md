@@ -4,7 +4,7 @@
 
 Wrist Flight automates airplane mode on **Samsung Galaxy Watch and compatible Wear OS smartwatches**. Put your watch on and airplane mode turns on. Take it off or place it on its charger and airplane mode turns off. If you prefer airplane mode while wearing your watch, Wrist Flight saves you the repeated trips to Quick Settings.
 
-**[Download the APK](https://github.com/arusaha/wrist-flight/releases/tag/v1.0)** · **[Installation guide](#install-from-windows)** · **[Compatibility and testing](#compatibility-and-testing)**
+**[Download the APK](https://github.com/arusaha/wrist-flight/releases/tag/v1.1)** · **[Installation guide](#install-from-windows)** · **[Compatibility and testing](#compatibility-and-testing)**
 
 A sideloadable Android watch app. **No root required; Shizuku must be installed and running on the watch.**
 
@@ -12,7 +12,7 @@ A sideloadable Android watch app. **No root required; Shizuku must be installed 
 
 - **Automatic airplane / flight mode:** uses the watch's wrist-detection sensor to follow when you put it on and take it off.
 - **Charging takes priority:** airplane mode stays off while docked, including when fully charged.
-- **Control on the watch:** start, pause, check setup and review recent activity from a round-screen interface.
+- **Control on the watch:** a compact Home screen keeps the full-size start/pause button above the fold at standard text size. The airplane is filled while monitoring and outlined when paused; brief toggle animations respect the system animation setting. Setup and recent activity remain a scroll away.
 - **Local operation:** once Shizuku is running, airplane-mode commands stay on the watch; a live computer connection is not required for each change.
 - **No account, ads or analytics:** Wrist Flight has no Internet permission and does not collect GPS or heart-rate readings.
 - **Ready to sideload:** download the APK and checksum, or build it yourself. Source code, tests and Windows setup scripts are included.
@@ -30,7 +30,7 @@ Charging always takes priority. There is no deliberate delay before turning airp
 
 ## Compatibility and testing
 
-Wrist Flight requires a Wear OS watch running Android API 30 or later, a wake-up off-body sensor, Sensors permissions, and Shizuku running on the watch. **The maintainer confirmed the app works on their Samsung watch on October 10, 2026.** The setup was identified as **Samsung SM-L350, Android API 37**, with Shizuku 13.6.0 and the `offbody_detect Wakeup` sensor.
+Wrist Flight requires a Wear OS watch running Android API 30 or later, a wake-up off-body sensor, Sensors permissions, and Shizuku running on the watch. **The maintainer confirmed version 1.0 works on their Samsung watch on October 10, 2026.** The setup was identified as **Samsung SM-L350, Android API 37**, with Shizuku 13.6.0 and the `offbody_detect Wakeup` sensor. Version 1.1 updates the Home layout and visual feedback; its new UI has not yet been checked on the physical watch.
 
 The build and all 20 automated policy tests pass. Results for every [physical verification scenario](#physical-verification), long-term reliability and battery use have not been individually recorded. Other watch models and firmware versions are not yet verified. A phone companion app is not required.
 
@@ -83,7 +83,7 @@ After pairing and connecting, use `adb -s YOUR_WATCH_DEVICE_ID` in place of `adb
 
 ```text
 adb install -r path/to/shizuku.apk
-adb install -r dist/WristFlight-1.0.apk
+adb install -r dist/WristFlight-1.1.apk
 adb shell pm grant dev.wristflight android.permission.BODY_SENSORS
 adb shell pm grant dev.wristflight android.permission.BODY_SENSORS_BACKGROUND
 adb shell pm grant dev.wristflight android.permission.POST_NOTIFICATIONS
@@ -156,7 +156,7 @@ Requires JDK 17, Android SDK platform 35 and build-tools 35.0.0. Set `JAVA_HOME`
 
 Or use `gradlew.bat :app:assembleRelease :app:testDebugUnitTest :app:lintDebug` (`sh ./gradlew` on macOS/Linux). Gradle 8.11.1 and dependencies are downloaded on the first build. The build script copies the signed APK and its SHA-256 checksum into `dist`.
 
-- Package: `dev.wristflight`; version: `1.0`.
+- Package: `dev.wristflight`; version: `1.1` (version code 2).
 - Requires Wear OS / Android API 30+. Targets API 35 and uses the legacy body-sensor permission compatibility path on newer OS versions. This does not certify compatibility with every later Samsung release.
 - The published release APK is non-debuggable and signed with the maintainer's Android development key. Rebuilding elsewhere uses your local development key and cannot update the published APK without uninstalling. Keep your key for future updates. Private signing keys are not included in this repository.
 - Tests: `app/build/reports/tests/testDebugUnitTest/index.html`.
