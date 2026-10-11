@@ -8,6 +8,18 @@ Wrist Flight automates airplane mode on **Samsung Galaxy Watch and compatible We
 
 A sideloadable Android watch app. **No root required; Shizuku must be installed and running on the watch.**
 
+## Airplane mode for all-day wear and bedtime
+
+**Wear it through the day. Keep your bedtime routine simple.**
+
+Prefer to limit your watch's wireless radio-frequency (RF) emissions, often discussed as EMF? Wrist Flight makes your airplane-mode preference automatic. Whether you wear your Galaxy Watch all day or sleep with your hand close to your head, there is one less setting to remember: airplane mode turns on while the watch is worn, then turns off when you take it off or put it on its charger.
+
+- **All-day wear:** make airplane mode your default while wearing the watch, without repeated trips to Quick Settings.
+- **Bedtime:** keep the same preference overnight, including if you sleep with your wrist beside your face. No separate bedtime schedule is needed.
+- **Reconnect when you take it off:** removal or charging turns airplane mode off so the watch can reconnect.
+
+**What this means for RF/EMF:** disabling a transmitting radio stops that radio's transmissions, but the result depends on which radios your watch actually disables. Wi-Fi and Bluetooth can remain enabled in airplane mode; check their settings on your watch. Wrist Flight controls airplane mode, not each radio separately. It does not measure exposure, eliminate all EMF, or claim health or sleep benefits. This is a personal connectivity preference. For background, see [Google's explanation of remembered Wi-Fi/Bluetooth settings in airplane mode](https://support.google.com/pixelphone/answer/2819583?hl=en) and the [FDA's overview of RF research](https://www.fda.gov/radiation-emitting-products/cell-phones/radio-frequency-radiation-and-cell-phones).
+
 ## Why Wrist Flight?
 
 - **Automatic airplane / flight mode:** uses the watch's wrist-detection sensor to follow when you put it on and take it off.
