@@ -13,11 +13,12 @@ param(
     [string]$PairAddress,
     [string]$ConnectAddress,
     [string]$ShizukuApk,
-    [string]$ApkPath = (Join-Path $PSScriptRoot '..\dist\WristFlight-1.1.apk'),
+    [string]$ApkPath,
     [switch]$RestartOnly
 )
 $ErrorActionPreference = 'Stop'
 $repoPath = Split-Path -Parent $PSScriptRoot
+if (-not $ApkPath) { $ApkPath = Join-Path $repoPath 'dist\WristFlight-1.1.1.apk' }
 
 if (-not $AdbPath) {
     $adbCommand = Get-Command adb -ErrorAction SilentlyContinue

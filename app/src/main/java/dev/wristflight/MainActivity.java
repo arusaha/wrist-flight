@@ -56,7 +56,7 @@ public final class MainActivity extends Activity {
         if (result == PackageManager.PERMISSION_GRANTED) {
             toast("Airplane control authorized");
             if (prefs.enabled() || prefs.restorePending()) WristService.launch(this, WristService.RESUME);
-        } else toast("Access denied. Enable Wrist Flight in Shizuku.");
+        } else toast("Access denied. Enable " + getString(R.string.app_name) + " in Shizuku.");
         update();
     });
 
@@ -116,7 +116,7 @@ public final class MainActivity extends Activity {
         icon.setMarginEnd(dp(6));
         brand.addView(plane, icon);
         TextView name = new TextView(this);
-        name.setText(R.string.app_name);
+        name.setText(R.string.app_brand);
         name.setAllCaps(true);
         name.setTextSize(11);
         name.setTextColor(MINT);
@@ -212,7 +212,7 @@ public final class MainActivity extends Activity {
         });
         label("If control is unavailable, turn airplane mode off in Quick Settings. Airplane mode follows the watch’s saved Wi-Fi and Bluetooth preferences.", 12, MUTED, false);
         button("Back", false, () -> show("home"));
-        label("Wrist Flight " + BuildConfig.VERSION_NAME + "\nPersonal • on-device only", 11, MUTED, false);
+        label(getString(R.string.app_name) + "\nVersion " + BuildConfig.VERSION_NAME + "\nPersonal • on-device only", 11, MUTED, false);
     }
 
     private void requestShizuku() {
@@ -220,7 +220,7 @@ public final class MainActivity extends Activity {
             if (!Shizuku.pingBinder()) { toast("Start Shizuku on the watch first"); return; }
             if (ShizukuBridge.authorized()) { toast("Shizuku access is ready"); return; }
             if (Shizuku.shouldShowRequestPermissionRationale()) {
-                toast("Open Shizuku → Authorized applications → Wrist Flight");
+                toast("Open Shizuku → Authorized applications → " + getString(R.string.app_name));
                 return;
             }
             Shizuku.requestPermission(10);

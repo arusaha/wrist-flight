@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Wrist Flight</string>
+    <string name="app_name">Wrist Flight: Auto Airplane</string>
+    <string name="app_brand">Wrist Flight</string>
 </resources>

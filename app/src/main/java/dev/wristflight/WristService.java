@@ -270,7 +270,7 @@ public final class WristService extends Service implements SensorEventListener {
         PendingIntent open = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent pause = PendingIntent.getForegroundService(this, 1, new Intent(this, WristService.class).setAction(PAUSE), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         return new Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_flight)
-                .setContentTitle("Wrist Flight").setContentText(message)
+                .setContentTitle(getString(R.string.app_name)).setContentText(message)
                 .setStyle(new Notification.BigTextStyle().bigText(message)).setContentIntent(open)
                 .setOngoing(true).setOnlyAlertOnce(true).setLocalOnly(true)
                 .addAction(new Notification.Action.Builder(null, "Pause & turn off", pause).build()).build();
